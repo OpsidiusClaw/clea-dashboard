@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import tasksData from '~/data/tasks.json'
 
 export type TaskStatus = 'backlog' | 'todo' | 'in_progress' | 'done'
 export type Priority = 'low' | 'medium' | 'high'
@@ -30,10 +29,11 @@ export interface Activity {
 }
 
 export const useTasksStore = defineStore('tasks', () => {
-  const tasks = ref<Task[]>(tasksData.tasks as Task[])
-  const projects = ref<Project[]>(tasksData.projects as Project[])
-  const activities = ref<Activity[]>(tasksData.activities as Activity[])
+  const tasks = ref<Task[]>([])
+  const projects = ref<Project[]>([])
+  const activities = ref<Activity[]>([])
   const selectedProjectId = ref<string | null>(null)
+  const loading = ref(false)
 
   const filteredTasks = computed(() => {
     if (!selectedProjectId.value) return tasks.value
@@ -56,12 +56,59 @@ export const useTasksStore = defineStore('tasks', () => {
     backlog: filteredTasks.value.filter(t => t.status === 'backlog').length,
   }))
 
-  function moveTask(taskId: string, newStatus: TaskStatus) {
-    const task = tasks.value.find(t => t.id === taskId)
-    if (task) {
-      task.status = newStatus
-      task.updatedAt = new Date().toISOString()
+  async function fetchTasks() {
+    loading.value = true
+    try {
+      const data = await $fetch('/api/tasks')
+      tasks.value = data.tasks
+      projects.value = data.projects
+      activities.value = data.activities
+    } catch (e) {
+      console.error('Erreur lors du chargement des tâches:', e)
+    } finally {
+      loading.value = false
     }
+  }
+
+  async function addTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) {
+    try {
+      const newTask = await $fetch('/api/tasks', {
+        method: 'POST',
+        body: { action: 'add', task },
+      })
+      tasks.value.push(newTask as Task)
+    } catch (e) {
+      console.error('Erreur lors de l\'ajout:', e)
+    }
+  }
+
+  async function updateTask(id: string, updates: Partial<Task>) {
+    try {
+      const updated = await $fetch('/api/tasks', {
+        method: 'POST',
+        body: { action: 'update', id, updates },
+      })
+      const index = tasks.value.findIndex(t => t.id === id)
+      if (index !== -1) tasks.value[index] = updated as Task
+    } catch (e) {
+      console.error('Erreur lors de la mise à jour:', e)
+    }
+  }
+
+  async function deleteTask(id: string) {
+    try {
+      await $fetch('/api/tasks', {
+        method: 'POST',
+        body: { action: 'delete', id },
+      })
+      tasks.value = tasks.value.filter(t => t.id !== id)
+    } catch (e) {
+      console.error('Erreur lors de la suppression:', e)
+    }
+  }
+
+  function moveTask(taskId: string, newStatus: TaskStatus) {
+    updateTask(taskId, { status: newStatus })
   }
 
   function selectProject(projectId: string | null) {
@@ -73,9 +120,14 @@ export const useTasksStore = defineStore('tasks', () => {
     projects,
     activities,
     selectedProjectId,
+    loading,
     filteredTasks,
     tasksByStatus,
     metrics,
+    fetchTasks,
+    addTask,
+    updateTask,
+    deleteTask,
     moveTask,
     selectProject,
   }

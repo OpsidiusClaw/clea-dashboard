@@ -1,0 +1,82 @@
+{
+  "projects": [
+    { "id": "clea-core", "name": "Cléa Core", "color": "primary" },
+    { "id": "clea-dashboard", "name": "Cléa Dashboard", "color": "success" },
+    { "id": "clea-api", "name": "Cléa API", "color": "warning" }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Implémenter le système de mémoire persistante",
+      "description": "Mettre en place le stockage et la récupération de la mémoire contextuelle de Cléa",
+      "status": "done",
+      "priority": "high",
+      "projectId": "clea-core",
+      "assignee": "Cléa",
+      "createdAt": "2026-01-28T10:00:00Z",
+      "updatedAt": "2026-02-01T14:30:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Créer les composants Kanban du dashboard",
+      "description": "Développer KanbanBoard, KanbanColumn et TaskCard avec Nuxt UI",
+      "status": "in_progress",
+      "priority": "high",
+      "projectId": "clea-dashboard",
+      "assignee": "Cléa",
+      "createdAt": "2026-02-01T09:00:00Z",
+      "updatedAt": "2026-02-03T08:00:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Configurer les endpoints REST",
+      "description": "Définir et implémenter les routes API pour la gestion des tâches",
+      "status": "todo",
+      "priority": "medium",
+      "projectId": "clea-api",
+      "assignee": "Cléa",
+      "createdAt": "2026-02-02T11:00:00Z",
+      "updatedAt": "2026-02-02T11:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "Ajouter les tests unitaires du moteur de décision",
+      "description": "Écrire les tests pour le module de prise de décision autonome",
+      "status": "todo",
+      "priority": "medium",
+      "projectId": "clea-core",
+      "assignee": "Cléa",
+      "createdAt": "2026-02-02T14:00:00Z",
+      "updatedAt": "2026-02-02T14:00:00Z"
+    },
+    {
+      "id": "5",
+      "title": "Intégrer le système de notifications temps réel",
+      "description": "Connecter les WebSockets pour les notifications push du dashboard",
+      "status": "in_progress",
+      "priority": "low",
+      "projectId": "clea-dashboard",
+      "assignee": "Cléa",
+      "createdAt": "2026-01-30T16:00:00Z",
+      "updatedAt": "2026-02-03T07:00:00Z"
+    },
+    {
+      "id": "6",
+      "title": "Documenter l'architecture API",
+      "description": "Rédiger la documentation OpenAPI/Swagger pour tous les endpoints",
+      "status": "backlog",
+      "priority": "low",
+      "projectId": "clea-api",
+      "assignee": "Cléa",
+      "createdAt": "2026-02-03T08:00:00Z",
+      "updatedAt": "2026-02-03T08:00:00Z"
+    }
+  ],
+  "activities": [
+    { "id": "a1", "message": "Mémoire persistante déployée avec succès", "timestamp": "2026-02-01T14:30:00Z", "type": "success" },
+    { "id": "a2", "message": "Début du développement du dashboard Nuxt 4", "timestamp": "2026-02-01T09:00:00Z", "type": "info" },
+    { "id": "a3", "message": "Analyse des endpoints API en cours", "timestamp": "2026-02-02T11:00:00Z", "type": "info" },
+    { "id": "a4", "message": "Notifications WebSocket connectées au serveur", "timestamp": "2026-02-03T07:00:00Z", "type": "warning" },
+    { "id": "a5", "message": "Pipeline CI/CD configuré sur GitHub Actions", "timestamp": "2026-02-02T16:00:00Z", "type": "success" }
+  ]
+}
