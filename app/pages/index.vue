@@ -1,3 +1,26 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useTasksStore, type Task } from '~/stores/tasks'
+
+const store = useTasksStore()
+const addTaskModalRef = ref<InstanceType<typeof AddTaskModal>>()
+const editingTaskId = ref<string | null>(null)
+
+function openAddTaskModal() {
+  addTaskModalRef.value?.openModal()
+}
+
+function handleEditTask(task: Task) {
+  editingTaskId.value = task.id
+}
+
+function handleDeleteTask(taskId: string) {
+  if (confirm('Supprimer cette tâche ?')) {
+    store.deleteTask(taskId)
+  }
+}
+</script>
+
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
     <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
@@ -9,7 +32,15 @@
             </h1>
             <StatusIndicator />
           </div>
-          <ProjectSelector />
+          <div class="flex items-center gap-3">
+            <UButton
+              icon="i-lucide-plus"
+              label="Nouvelle tâche"
+              color="primary"
+              @click="openAddTaskModal"
+            />
+            <ProjectSelector />
+          </div>
         </div>
       </div>
     </header>
@@ -19,12 +50,16 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2">
-          <KanbanBoard />
+          <KanbanBoard @edit-task="handleEditTask" @delete-task="handleDeleteTask" />
         </div>
         <div>
           <Timeline />
         </div>
       </div>
     </main>
+
+    <!-- Modals -->
+    <AddTaskModal ref="addTaskModalRef" />
+    <EditTaskModal :task-id="editingTaskId" />
   </div>
 </template>
