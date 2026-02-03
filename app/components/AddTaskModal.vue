@@ -1,93 +1,105 @@
 <script setup lang="ts">
-import type { TaskStatus, Priority } from '~/stores/tasks'
+import { ref, computed } from 'vue'
+import { useTasksStore, type TaskStatus, type Priority } from '~/stores/tasks'
 
 const store = useTasksStore()
+const isOpen = ref(false)
 
-const open = defineModel<boolean>('open', { default: false })
-
-const form = reactive({
+const newTask = ref({
   title: '',
   description: '',
-  status: 'todo' as TaskStatus,
-  priority: 'medium' as Priority,
   projectId: '',
-  assignee: 'Cléa',
+  priority: 'medium' as Priority,
+  status: 'todo' as TaskStatus,
 })
 
-const statusOptions = [
-  { label: 'Backlog', value: 'backlog' },
-  { label: 'À faire', value: 'todo' },
-  { label: 'En cours', value: 'in_progress' },
-  { label: 'Terminé', value: 'done' },
-]
-
-const priorityOptions = [
-  { label: 'Basse', value: 'low' },
-  { label: 'Moyenne', value: 'medium' },
-  { label: 'Haute', value: 'high' },
-]
-
-const projectOptions = computed(() =>
-  store.projects.map(p => ({ label: p.name, value: p.id }))
-)
+const canSubmit = computed(() => newTask.value.title.trim().length > 0)
 
 function resetForm() {
-  form.title = ''
-  form.description = ''
-  form.status = 'todo'
-  form.priority = 'medium'
-  form.projectId = store.projects[0]?.id ?? ''
-  form.assignee = 'Cléa'
+  newTask.value = {
+    title: '',
+    description: '',
+    projectId: '',
+    priority: 'medium',
+    status: 'todo',
+  }
 }
 
-async function submit() {
-  if (!form.title.trim()) return
-  await store.addTask({ ...form })
-  open.value = false
+function handleSubmit() {
+  if (!canSubmit.value) return
+  
+  store.addTask({
+    title: newTask.value.title,
+    description: newTask.value.description,
+    projectId: newTask.value.projectId || 'clea-core',
+    priority: newTask.value.priority,
+    status: newTask.value.status,
+  })
+  
   resetForm()
+  isOpen.value = false
 }
 
-watch(open, (val) => {
-  if (val) resetForm()
-})
+function openModal() {
+  resetForm()
+  isOpen.value = true
+}
+
+defineExpose({ openModal })
 </script>
 
 <template>
-  <UModal v-model:open="open">
-    <template #header>
-      <h3 class="text-lg font-semibold">Nouvelle tâche</h3>
-    </template>
-    <template #body>
-      <div class="space-y-4">
-        <UFormField label="Titre">
-          <UInput v-model="form.title" placeholder="Titre de la tâche" class="w-full" />
-        </UFormField>
-        <UFormField label="Description">
-          <UTextarea v-model="form.description" placeholder="Description" class="w-full" />
-        </UFormField>
-        <div class="grid grid-cols-2 gap-4">
-          <UFormField label="Statut">
-            <USelectMenu v-model="form.status" :items="statusOptions" value-key="value" class="w-full" />
-          </UFormField>
-          <UFormField label="Priorité">
-            <USelectMenu v-model="form.priority" :items="priorityOptions" value-key="value" class="w-full" />
-          </UFormField>
+  <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-lg' }">
+    <UCard>
+      <template #header>
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Nouvelle tâche</h3>
+          <UButton color="gray" variant="ghost" icon="i-lucide-x" @click="isOpen = false" />
         </div>
+      </template>
+
+      <UForm class="space-y-4" @submit="handleSubmit">
+        <UFormGroup label="Titre" required>
+          <UInput v-model="newTask.title" placeholder="Nom de la tâche..." />
+        </UFormGroup>
+
+        <UFormGroup label="Description">
+          <UTextarea v-model="newTask.description" placeholder="Description détaillée..." :rows="3" />
+        </UFormGroup>
+
         <div class="grid grid-cols-2 gap-4">
-          <UFormField label="Projet">
-            <USelectMenu v-model="form.projectId" :items="projectOptions" value-key="value" class="w-full" />
-          </UFormField>
-          <UFormField label="Assigné à">
-            <UInput v-model="form.assignee" class="w-full" />
-          </UFormField>
+          <UFormGroup label="Projet">
+            <USelect v-model="newTask.projectId" :options="[
+              { label: 'Sélectionner...', value: '' },
+              ...store.projects.map(p => ({ label: p.name, value: p.id }))
+            ]" />
+          </UFormGroup>
+
+          <UFormGroup label="Priorité">
+            <USelect v-model="newTask.priority" :options="[
+              { label: 'Basse', value: 'low' },
+              { label: 'Moyenne', value: 'medium' },
+              { label: 'Haute', value: 'high' },
+            ]" />
+          </UFormGroup>
         </div>
-      </div>
-    </template>
-    <template #footer>
-      <div class="flex justify-end gap-2">
-        <UButton color="neutral" variant="ghost" @click="open = false">Annuler</UButton>
-        <UButton color="primary" :disabled="!form.title.trim()" @click="submit">Créer</UButton>
-      </div>
-    </template>
+
+        <UFormGroup label="Statut">
+          <USelect v-model="newTask.status" :options="[
+            { label: 'Backlog', value: 'backlog' },
+            { label: 'À faire', value: 'todo' },
+            { label: 'En cours', value: 'in_progress' },
+            { label: 'Terminé', value: 'done' },
+          ]" />
+        </UFormGroup>
+      </UForm>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton color="gray" variant="ghost" label="Annuler" @click="isOpen = false" />
+          <UButton color="primary" label="Créer la tâche" :disabled="!canSubmit" @click="handleSubmit" />
+        </div>
+      </template>
+    </UCard>
   </UModal>
 </template>
